@@ -13,7 +13,7 @@ def get_config(argv=sys.argv[1:]):
     parser.add_argument('files', nargs='*', default=None)
     return parser.parse_args(argv)
 
-def check_file(filename=None, show_filename=False):
+def check_file(filename=None):
     """
     Check whether an input file is valid PostgreSQL. If no filename is
     passed, STDIN is checked.
@@ -28,19 +28,11 @@ def check_file(filename=None, show_filename=False):
         with sys.stdin as filelike:
             sql_string = sys.stdin.read()
 
-    success, msg = check_string(sql_string)
-
-    # report results
-    result = 0
-    if not success:
-        # possibly show the filename with the error message
-        prefix = ""
-        if show_filename and filename is not None:
-            prefix = filename + ": "
-        print(prefix + msg)
-        result = 1
-
-    return result
+    results = check_string(sql_string)
+    if results:
+        print_results(filename, results)
+        return 1
+    return 0
 
 def check_string(sql_string):
     """
@@ -50,20 +42,30 @@ def check_string(sql_string):
     problem otherwise.
     """
     prepped_sql = sqlprep.prepare_sql(sql_string)
-    success, msg = ecpg.check_syntax(prepped_sql)
-    return success, msg
+    results = []
+    for (line_offset, sql) in prepped_sql:
+        # Change the code here to handle returning a list:
+        success, msglist = ecpg.check_syntax(line_offset, sql)
+        if not success:
+            results.extend(msglist)
+    return results
 
 def check_files(files):
     if files is None or len(files) == 0:
         return check_file()
     else:
-        # show filenames if > 1 file was passed as a parameter
-        show_filenames = (len(files) > 1)
-
         accumulator = 0
         for filename in files:
-            accumulator |= check_file(filename, show_filenames)
+            accumulator |= check_file(filename)
         return accumulator
+
+def print_results(filename, results):
+    prefix = ""
+    if filename is not None:
+        print("File: " + filename + ":")
+        prefix = "  "
+    for msg in results:
+        print(prefix + "Error: " + msg)
 
 def main():
     config = get_config()

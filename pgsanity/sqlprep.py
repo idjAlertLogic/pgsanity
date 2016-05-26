@@ -5,7 +5,10 @@ except ImportError:
     from io import StringIO
 
 def prepare_sql(sql):
-    results = StringIO()
+    initial_line_offset = 0 # from the start of the file, to the start of the statement
+    line_offset_difference = 0 # from the start of the statemtent to the current line
+    response = []
+    result = StringIO()
 
     in_statement = False
     in_line_comment = False
@@ -31,9 +34,15 @@ def prepare_sql(sql):
 
         start_str = start_str or start or ""
         precontents = precontents or ""
-        results.write(start_str + precontents + contents)
+        result.write(start_str + precontents + contents)
 
         if not in_line_comment and not in_block_comment and in_statement and end == ";":
+            result.write(end) # Somewhat hacky
+            response.append((initial_line_offset, result.getvalue()))
+            result.close()
+            result = StringIO()
+            initial_line_offset += line_offset_difference
+            line_offset_difference = 0
             in_statement = False
 
         if in_block_comment and end == "*/":
@@ -41,9 +50,8 @@ def prepare_sql(sql):
 
         if in_line_comment and end == "\n":
             in_line_comment = False
-
-    response = results.getvalue()
-    results.close()
+        if end == "\n":
+            line_offset_difference += 1
     return response
 
 def split_sql(sql):
@@ -55,7 +63,7 @@ def split_sql(sql):
     start = 0
 
     while start <= len(sql):
-        results = get_next_occurence(sql, start, bookends)
+        results = get_next_occurrence(sql, start, bookends)
         if results is None:
             yield (last_bookend_found, None, sql[start:])
             start = len(sql) + 1
@@ -65,8 +73,8 @@ def split_sql(sql):
             start = end + len(bookend)
             last_bookend_found = bookend
 
-def get_next_occurence(haystack, offset, needles):
-    """find next occurence of one of the needles in the haystack
+def get_next_occurrence(haystack, offset, needles):
+    """find next occurrence of one of the needles in the haystack
        return: tuple of (index, needle found)
            or: None if no needle was found"""
     # make map of first char to full needle (only works if all needles

@@ -3,7 +3,7 @@ import subprocess
 import re
 import os
 
-def check_syntax(string):
+def check_syntax(line_offset, string):
     """ Check syntax of a string of PostgreSQL-dialect SQL """
     args = ["ecpg", "-o", "-", "-"]
 
@@ -19,11 +19,15 @@ def check_syntax(string):
             msg = "Unable to execute 'ecpg', you likely need to install it.'"
             raise OSError(msg)
         if proc.returncode == 0:
-            return (True, "")
+            return (True, [])
         else:
-            return (False, parse_error(err))
+            return (False, parse_error(line_offset, err))
 
-def parse_error(error):
-    error = re.sub(r'^[^:]+:', 'line ', error, count=1)
-    error = re.sub(r'\/\/', '--', error)
-    return error.strip()
+def parse_error(line_offset, error):
+    # The split generates a trailing empty line
+    errlist = filter(lambda e: e != '', error.split('stdin'))
+    msglist = []
+    for e in errlist:
+        e = re.findall(r":([0-9]*): ERROR:(.*)", e.translate(None, '\n'))
+        msglist.append('line ' + repr(int(e[0][0]) + line_offset) + ':' + e[0][1])
+    return msglist
