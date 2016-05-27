@@ -37,7 +37,6 @@ def prepare_sql(sql):
         result.write(start_str + precontents + contents)
 
         if not in_line_comment and not in_block_comment and in_statement and end == ";":
-            result.write(end) # Somewhat hacky
             response.append((initial_line_offset, result.getvalue()))
             result.close()
             result = StringIO()
@@ -69,7 +68,7 @@ def split_sql(sql):
             start = len(sql) + 1
         else:
             (end, bookend) = results
-            yield (last_bookend_found, bookend, sql[start:end])
+            yield (last_bookend_found, bookend, sql[start:end + 1])
             start = end + len(bookend)
             last_bookend_found = bookend
 

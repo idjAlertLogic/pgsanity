@@ -44,7 +44,6 @@ def check_string(sql_string):
     prepped_sql = sqlprep.prepare_sql(sql_string)
     results = []
     for (line_offset, sql) in prepped_sql:
-        # Change the code here to handle returning a list:
         success, msglist = ecpg.check_syntax(line_offset, sql)
         if not success:
             results.extend(msglist)

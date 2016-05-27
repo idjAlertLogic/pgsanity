@@ -24,7 +24,7 @@ def check_syntax(line_offset, string):
             return (False, parse_error(line_offset, err))
 
 def parse_error(line_offset, error):
-    # The split generates a trailing empty line
+    # The split generates a trailing empty line, so filter it:
     errlist = filter(lambda e: e != '', error.split('stdin'))
     msglist = []
     for e in errlist:
