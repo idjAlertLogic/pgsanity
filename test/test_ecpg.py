@@ -21,5 +21,5 @@ class TestEcpg(unittest.TestCase):
 
     def test_parse_error_comments(self):
         error = '/tmp/tmpLBKZo5.pgc:5: ERROR: syntax error at or near "//"'
-        expected = ['line 5: ERROR: syntax error at or near "//"']
+        expected = ['line 5: ERROR: syntax error at or near "--"']
         self.assertEqual(expected, ecpg.parse_error(0, error))

@@ -28,9 +28,8 @@ def parse_error(line_offset, error):
     errlist = filter(lambda e: e != '', error.split('stdin'))
     msglist = []
     for e in errlist:
-        e = re.findall(r":([0-9]*): ERROR:\s*(.*)", e.translate(None, '\n'))
+        e = e.translate(None, '\n')
+        e = re.sub(r'\/\/', '--', e) # convert comments back to SQL syntax
+        e = re.findall(r":([0-9]*): ERROR:\s*(.*)", e)
         msglist.append('line ' + repr(int(e[0][0]) + line_offset) + ': ERROR: ' + e[0][1])
     return msglist
-
-
-## Remember to switch the comment characters!!
