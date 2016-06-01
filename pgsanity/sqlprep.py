@@ -16,6 +16,7 @@ def prepare_sql(sql):
     in_statement = False
     in_line_comment = False
     in_block_comment = False
+    in_string = False
     for (start, end, contents) in split_sql(sql):
         precontents = None
         start_str = None
@@ -28,6 +29,8 @@ def prepare_sql(sql):
                 in_statement = True
                 precontents = "EXEC SQL "
 
+        if start == '"' or start == "'":
+            in_string = not in_string
         if start == "/*":
             in_block_comment = True
         elif start == "--" and not in_block_comment:
@@ -37,12 +40,12 @@ def prepare_sql(sql):
 
         start_str = start_str or start or ""
         # I don't know how else to catch this case:
-        if start_str == ";" and not in_block_comment and not in_line_comment:
+        if start_str == ";" and not in_block_comment and not in_line_comment and not in_string:
             start_str = ""
         precontents = precontents or ""
         result.write(start_str + precontents + contents)
 
-        if not in_line_comment and not in_block_comment and in_statement and end == ";":
+        if not in_line_comment and not in_block_comment and in_statement and not in_string and end == ";":
             response.append((initial_line_offset, result.getvalue() + end))
             result.close()
             result = StringIO()
@@ -64,7 +67,7 @@ def split_sql(sql):
     """generate hunks of SQL that are between the bookends
        return: tuple of beginning bookend, closing bookend, and contents
          note: beginning & end of string are returned as None"""
-    bookends = ("\n", ";", "--", "/*", "*/")
+    bookends = ("\n", ";", "--", "/*", "*/", "'", '"')
     last_bookend_found = None
     start = 0
 

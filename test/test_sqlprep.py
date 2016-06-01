@@ -157,6 +157,11 @@ class TestSqlPrep(unittest.TestCase):
                     (4, "EXEC SQL select c from d;")]
         self.assertEqual(expected, sqlprep.prepare_sql(text))
 
+    def test_semicolon_inside_string(self):
+        text = "select\nlistagg(tag_value, '; ') as tags\nfrom tags\n;"
+        expected = [(0, "EXEC SQL select\nlistagg(tag_value, '; ') as tags\nfrom tags\n;")]
+        self.assertEqual(expected, sqlprep.prepare_sql(text))
+
 #  TODO:
 #  semicolon followed by only whitespace / comments
 #  multiple semicolons in a row (legal?)
