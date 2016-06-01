@@ -36,10 +36,9 @@ def check_file(filename=None):
 
 def check_string(sql_string):
     """
-    Check whether a string is valid PostgreSQL. Returns a boolean
-    indicating validity and a message from ecpg, which will be an
-    empty string if the input was valid, or a description of the
-    problem otherwise.
+    Check whether a string is valid PostgreSQL. Returns a list of messages
+    from ecpg, which will be the empty list if the input was valid, or a
+    list of error messages otherwise.
     """
     prepped_sql = sqlprep.prepare_sql(sql_string)
     results = []

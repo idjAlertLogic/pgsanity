@@ -5,6 +5,9 @@ except ImportError:
     from io import StringIO
 
 def prepare_sql(sql):
+    # This function is now a little more 'aggressive' than before and throws away some
+    # expressions which are not passed to ecpg like comments or empty statements after
+    # the final semicolon
     initial_line_offset = 0 # from the start of the file, to the start of the statement
     line_offset_difference = 0 # from the start of the statemtent to the current line
     response = []
@@ -33,16 +36,20 @@ def prepare_sql(sql):
                 start_str = "//"
 
         start_str = start_str or start or ""
+        # I don't know how else to catch this case:
+        if start_str == ";" and not in_block_comment and not in_line_comment:
+            start_str = ""
         precontents = precontents or ""
         result.write(start_str + precontents + contents)
 
         if not in_line_comment and not in_block_comment and in_statement and end == ";":
-            response.append((initial_line_offset, result.getvalue()))
+            response.append((initial_line_offset, result.getvalue() + end))
             result.close()
             result = StringIO()
             initial_line_offset += line_offset_difference
             line_offset_difference = 0
             in_statement = False
+
 
         if in_block_comment and end == "*/":
             in_block_comment = False
@@ -68,7 +75,7 @@ def split_sql(sql):
             start = len(sql) + 1
         else:
             (end, bookend) = results
-            yield (last_bookend_found, bookend, sql[start:end + 1])
+            yield (last_bookend_found, bookend, sql[start:end])
             start = end + len(bookend)
             last_bookend_found = bookend
 

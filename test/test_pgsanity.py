@@ -17,14 +17,14 @@ class TestPgSanity(unittest.TestCase):
 
     def test_check_valid_string(self):
         text = "select a from b;"
-        (success, msg) = pgsanity.check_string(text)
-        self.assertTrue(success)
+        msglist = pgsanity.check_string(text)
+        self.assertFalse(msglist)
 
     def test_check_invalid_string(self):
         text = "garbage select a from b;"
-        (success, msg) = pgsanity.check_string(text)
-        self.assertFalse(success)
-        self.assertEqual('line 1: ERROR: unrecognized data type name "garbage"', msg)
+        msglist = pgsanity.check_string(text)
+        self.assertTrue(msglist)
+        self.assertEqual(['line 1: ERROR: unrecognized data type name "garbage"'], msglist)
 
 
 class TestPgSanityFiles(unittest.TestCase):
