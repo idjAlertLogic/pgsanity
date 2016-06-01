@@ -5,8 +5,8 @@ from __future__ import absolute_import
 import argparse
 import sys
 
-from pgsanity import sqlprep
-from pgsanity import ecpg
+import sqlprep
+import ecpg
 
 def get_config(argv=sys.argv[1:]):
     parser = argparse.ArgumentParser(description='Check syntax of SQL for PostgreSQL')
