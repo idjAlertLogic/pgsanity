@@ -1,8 +1,0 @@
-\"COMPOUND\"
-\"DISTKEY\"
-\"IDENTITY\"
-\"ONLY\"
-\"SORTKEY\"
-nested\ \/\*\ \.\.\.\ \*\/\ comments
-\"reference\"
-\"\$\"
