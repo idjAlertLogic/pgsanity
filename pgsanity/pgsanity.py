@@ -2,6 +2,11 @@
 
 from __future__ import print_function
 from __future__ import absolute_import
+# The following two lines are to work around Python's apparently broken pipe
+# handling.  For more information see: http://docs.python.org/library/signal.html
+# http://newbebweb.blogspot.co.uk/2012/02/python-head-ioerror-errno-32-broken.html
+from signal import signal, SIGPIPE, SIG_DFL
+signal(SIGPIPE,SIG_DFL)
 import argparse
 import sys
 
