@@ -29,7 +29,7 @@ def prepare_sql(sql):
                 in_statement = True
                 precontents = "EXEC SQL "
 
-        if start == '"' or start == "'":
+        if (start == '"' or start == "'") and not (in_line_comment or in_block_comment):
             in_string = not in_string
         if start == "/*":
             in_block_comment = True
